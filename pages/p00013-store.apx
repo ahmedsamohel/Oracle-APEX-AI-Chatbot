@@ -1,0 +1,466 @@
+page 13 (
+    name: Store
+    alias: STORE
+    title: Store
+    pageGroup: @administration
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @modal-dialog
+    }
+    dialog {
+        chained: false
+        resizable: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @administration-rights
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: dialogFooter
+        }
+        appearance {
+            template: @buttons-container
+            templateOptions: #DEFAULT#
+        }
+        settings {
+            outputAs: text
+        }
+    )
+
+    region store (
+        name: Store
+        type: form
+        source {
+            location: localDatabase
+            tableName: STORES
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+    )
+
+    pageItem P13_LATITUDE (
+        type: numberField
+        label {
+            label: Latitude
+            alignment: right
+        }
+        layout {
+            sequence: 50
+            region: @store
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @store
+            column: LATITUDE
+            dataType: number
+        }
+    )
+
+    pageItem P13_LOGO (
+        type: fileUpload
+        label {
+            label: Logo
+            alignment: right
+        }
+        layout {
+            sequence: 70
+            region: @store
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 60
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @store
+            column: LOGO
+            dataType: blob
+        }
+    )
+
+    pageItem P13_LOGO_CHARSET (
+        type: hidden
+        layout {
+            sequence: 100
+            region: @store
+            slot: regionBody
+        }
+        source {
+            formRegion: @store
+            column: LOGO_CHARSET
+            dataType: varchar2
+        }
+    )
+
+    pageItem P13_LOGO_FILENAME (
+        type: hidden
+        layout {
+            sequence: 90
+            region: @store
+            slot: regionBody
+        }
+        source {
+            formRegion: @store
+            column: LOGO_FILENAME
+            dataType: varchar2
+        }
+    )
+
+    pageItem P13_LOGO_LAST_UPDATED (
+        type: hidden
+        layout {
+            sequence: 110
+            region: @store
+            slot: regionBody
+        }
+        source {
+            formRegion: @store
+            column: LOGO_LAST_UPDATED
+            dataType: date
+        }
+    )
+
+    pageItem P13_LOGO_MIME_TYPE (
+        type: hidden
+        layout {
+            sequence: 80
+            region: @store
+            slot: regionBody
+        }
+        source {
+            formRegion: @store
+            column: LOGO_MIME_TYPE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P13_LONGITUDE (
+        type: numberField
+        label {
+            label: Longitude
+            alignment: right
+        }
+        layout {
+            sequence: 60
+            region: @store
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @store
+            column: LONGITUDE
+            dataType: number
+        }
+    )
+
+    pageItem P13_PHYSICAL_ADDRESS (
+        type: textarea
+        label {
+            label: Physical Address
+            alignment: right
+        }
+        layout {
+            sequence: 40
+            region: @store
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 60
+            height: 4
+        }
+        validation {
+            maxLength: 512
+        }
+        source {
+            formRegion: @store
+            column: PHYSICAL_ADDRESS
+            dataType: varchar2
+        }
+    )
+
+    pageItem P13_STORE_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @store
+            slot: regionBody
+        }
+        source {
+            formRegion: @store
+            column: STORE_ID
+            dataType: number
+            queryOnly: true
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P13_STORE_NAME (
+        type: textField
+        label {
+            label: Store Name
+            alignment: right
+        }
+        settings {
+            trimSpaces: none
+        }
+        layout {
+            sequence: 20
+            region: @store
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @required-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            valueRequired: true
+            maxLength: 255
+        }
+        source {
+            formRegion: @store
+            column: STORE_NAME
+            dataType: varchar2
+        }
+    )
+
+    pageItem P13_WEB_ADDRESS (
+        type: textField
+        label {
+            label: Web Address
+            alignment: right
+        }
+        settings {
+            trimSpaces: none
+        }
+        layout {
+            sequence: 30
+            region: @store
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            maxLength: 100
+        }
+        source {
+            formRegion: @store
+            column: WEB_ADDRESS
+            dataType: varchar2
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button create (
+        buttonName: CREATE
+        label: Create
+        layout {
+            sequence: 40
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P13_STORE_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: Delete
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: delete
+        }
+        appearance {
+            buttonTemplate: @text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--danger
+                t-Button--simple
+            ]
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P13_STORE_ID
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: Apply Changes
+        layout {
+            sequence: 30
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P13_STORE_ID
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: Cancel Dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        execution {
+            sequence: 50
+        }
+        advanced {
+            executionMappingIdentifier: 6197864682035542
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: CREATE,SAVE,DELETE
+        }
+    )
+
+    process initialize-form-store (
+        name: Initialize form Store
+        type: formInitialization
+        formRegion: @store
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 6197063744035541
+        }
+    )
+
+    process process-form-store (
+        name: Process form Store
+        type: formAutoRowProcessing
+        formRegion: @store
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 6197485537035541
+        }
+    )
+
+)
+

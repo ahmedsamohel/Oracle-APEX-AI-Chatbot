@@ -1,0 +1,93 @@
+app SHOPPING-ONLINE (
+    name: Shopping Online
+    logo {
+        type: text
+        text: Shopping Online
+    }
+    navigation {
+        homeUrl: {
+            page: 1
+        }
+        loginUrl: {
+            page: LOGIN
+        }
+    }
+    navigationMenu {
+        listTemplate: @top-navigation-menu
+        templateOptions: [
+            #DEFAULT#
+            js-tabLike
+        ]
+        listPosition: top
+    }
+    navigationBar {
+        list: @navigation-bar
+        listTemplate: @navigation-bar
+        templateOptions: #DEFAULT#
+    }
+    userInterface {
+        currentTheme: @universal-theme
+        globalPage: 0
+        addBuiltWithApexToFooter: false
+    }
+    appFormatMasks {
+        date: DS
+        timestamp: DS
+        timestampTimeZone: DS
+    }
+    authentication {
+        scheme: @public-auth
+        publicUser: APEX_PUBLIC_USER
+    }
+    security {
+        deepLinking: true
+        runtimeApiUsage: modifyThisApp
+    }
+    sessionStateProtection {
+        checksumSalt: FFD04450DB58F239ECB481868977FD5ABA0A1C33023E5FA39EBEA96651918A34
+    }
+    sessionManagement {
+        maxSessionIdleTime: 9999
+        sessionTimeoutWarning: 9999
+    }
+    globalization {
+        documentDirection: leftToRight
+    }
+    progressiveWebApp {
+        installable: true
+        display: fullscreen
+        appDescription: تطبيق للتسوق اونلاين هديه من احمد سمير
+    }
+    runtime {
+        allowFeedback: true
+        compatibilityMode: 21.2
+        accessibleReadOnlyItems: false
+    }
+    advanced {
+        modernizeApp: true
+    }
+
+    substitution APP_NAME (
+        value {
+            staticValue: Shopping Online
+        }
+    )
+
+    appSetting ACCESS_CONTROL_SCOPE (
+        value {
+            staticValue: ACL_ONLY
+            onUpgradeKeepValue: true
+        }
+        validation {
+            validValues: ACL_ONLY, ALL_USERS
+        }
+        config {
+            buildOption: @feature-access-control
+        }
+        comments {
+            comments: The default access level given to authenticated users who are not in the access control list
+        }
+    )
+
+)
+

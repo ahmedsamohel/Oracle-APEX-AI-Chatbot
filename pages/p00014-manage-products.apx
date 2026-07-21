@@ -1,0 +1,431 @@
+page 14 (
+    name: Manage Products
+    alias: MANAGE-PRODUCTS
+    title: Manage Products
+    pageGroup: @administration
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @modal-dialog
+        templateOptions: [
+            #DEFAULT#
+            ui-dialog--stretch
+            t-Dialog--noPadding
+        ]
+    }
+    dialog {
+        resizable: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @administration-rights
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    help {
+        helpText:
+            ```html
+            <p>To find data enter a search term into the search dialog, or click on the column headings to limit the records returned.</p>
+            
+            <p>You can perform numerous functions by clicking the <strong>Actions</strong> button. This includes selecting the columns that are displayed / hidden and their display sequence, plus numerous data and format functions.  You can also define additional views of the data using the chart, group by, and pivot options.</p>
+            
+            <p>If you want to save your customizations select report, or click download to unload the data. Enter you email address and time frame under subscription to be sent the data on a regular basis.<p>
+            
+            <p>For additional information click Help at the bottom of the Actions menu.</p> 
+            
+            <p>Click the <strong>Reset</strong> button to reset the interactive report back to the default settings.</p>
+            ```
+    }
+
+    region products (
+        name: Products
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery: select "PRODUCT_ID","PRODUCT_NAME","UNIT_PRICE",sys.dbms_lob.getlength("PRODUCT_DETAILS")"PRODUCT_DETAILS",sys.dbms_lob.getlength("PRODUCT_IMAGE")"PRODUCT_IMAGE","IMAGE_MIME_TYPE","IMAGE_FILENAME","IMAGE_CHARSET","IMAGE_LAST_UPDATED","COLOR_ID","DEPARTMENT_ID","CLOTHING_ID"from "PRODUCTS"
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        link {
+            linkColumn: customTarget
+            target: {
+                page: 15
+                items: {
+                    P15_PRODUCT_ID: \#PRODUCT_ID#\
+                }
+                action: resetPagination
+            }
+            linkIcon: <span role="img" aria-label="Edit" class="fa fa-edit" title="Edit"></span>
+        }
+        pagination {
+            type: rowRangesXToY
+        }
+        messages {
+            whenNoDataFound: No data found.
+            whenMoreDataFound: The maximum row count for this report is #MAX_ROW_COUNT# rows.  Please apply a filter to reduce the number of records in your query.
+        }
+        advanced {
+            savedReportMappingIdentifier: 6220219044035593
+        }
+
+        column CLOTHING_ID (
+            type: plainTextBasedOnLov
+            heading {
+                heading: Clothing
+            }
+            lov {
+                lov: @clothing-lookup-clothing
+            }
+            layout {
+                sequence: 12
+            }
+            source {
+                dataType: STRING
+            }
+            columnFilter {
+                type: defaultBasedOnColumnType
+            }
+            advanced {
+                endUserAlias: L
+            }
+        )
+
+        column COLOR_ID (
+            type: plainTextBasedOnLov
+            heading {
+                heading: Color
+            }
+            lov {
+                lov: @color-lookup-color
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+            columnFilter {
+                type: defaultBasedOnColumnType
+            }
+            advanced {
+                endUserAlias: J
+            }
+        )
+
+        column DEPARTMENT_ID (
+            type: plainTextBasedOnLov
+            heading {
+                heading: Department
+            }
+            lov {
+                lov: @department-lookup-department
+            }
+            layout {
+                sequence: 11
+            }
+            source {
+                dataType: STRING
+            }
+            columnFilter {
+                type: defaultBasedOnColumnType
+            }
+            advanced {
+                endUserAlias: K
+            }
+        )
+
+        column IMAGE_CHARSET (
+            type: plainText
+            heading {
+                heading: Image Charset
+            }
+            layout {
+                sequence: 8
+            }
+            source {
+                dataType: STRING
+            }
+            advanced {
+                endUserAlias: H
+            }
+        )
+
+        column IMAGE_FILENAME (
+            type: plainText
+            heading {
+                heading: Image Filename
+            }
+            layout {
+                sequence: 7
+            }
+            source {
+                dataType: STRING
+            }
+            advanced {
+                endUserAlias: G
+            }
+        )
+
+        column IMAGE_LAST_UPDATED (
+            type: plainText
+            heading {
+                heading: Image Last Updated
+            }
+            layout {
+                sequence: 9
+            }
+            source {
+                dataType: DATE
+            }
+            advanced {
+                endUserAlias: I
+            }
+        )
+
+        column IMAGE_MIME_TYPE (
+            type: plainText
+            heading {
+                heading: Image Mime Type
+            }
+            layout {
+                sequence: 6
+            }
+            source {
+                dataType: STRING
+            }
+            advanced {
+                endUserAlias: F
+            }
+        )
+
+        column PRODUCT_DETAILS (
+            type: downloadBlob
+            heading {
+                heading: Product Details
+            }
+            layout {
+                sequence: 4
+            }
+            blobAttributes {
+                tableName: PRODUCTS
+                blobColumn: PRODUCT_DETAILS
+                primaryKeyColumn1: PRODUCT_ID
+            }
+            source {
+                dataType: NUMBER
+            }
+            columnFilter {
+                type: none
+            }
+            advanced {
+                endUserAlias: D
+            }
+            enableUsersTo {
+                sort: false
+                filter: false
+                highlight: false
+                controlBreak: false
+                aggregate: false
+                compute: false
+                chart: false
+                groupBy: false
+                pivot: false
+            }
+        )
+
+        column PRODUCT_ID (
+            type: hidden
+            heading {
+                heading: Product ID
+            }
+            layout {
+                sequence: 0
+            }
+            source {
+                primaryKey: true
+                dataType: NUMBER
+            }
+            advanced {
+                endUserAlias: A
+            }
+        )
+
+        column PRODUCT_IMAGE (
+            type: downloadBlob
+            heading {
+                heading: Product Image
+            }
+            layout {
+                sequence: 5
+            }
+            blobAttributes {
+                tableName: PRODUCTS
+                blobColumn: PRODUCT_IMAGE
+                primaryKeyColumn1: PRODUCT_ID
+            }
+            source {
+                dataType: NUMBER
+            }
+            columnFilter {
+                type: none
+            }
+            advanced {
+                endUserAlias: E
+            }
+            enableUsersTo {
+                sort: false
+                filter: false
+                highlight: false
+                controlBreak: false
+                aggregate: false
+                compute: false
+                chart: false
+                groupBy: false
+                pivot: false
+            }
+        )
+
+        column PRODUCT_NAME (
+            type: plainText
+            heading {
+                heading: Product Name
+            }
+            layout {
+                sequence: 2
+            }
+            source {
+                dataType: STRING
+            }
+            advanced {
+                endUserAlias: B
+            }
+        )
+
+        column UNIT_PRICE (
+            type: plainText
+            heading {
+                heading: Unit Price
+                alignment: end
+            }
+            layout {
+                sequence: 3
+                columnAlignment: end
+            }
+            appearance {
+                formatMask: 999G999G999G999G999G999G999G999G999G990D00
+            }
+            source {
+                dataType: NUMBER
+            }
+            advanced {
+                endUserAlias: C
+            }
+        )
+
+        page {
+            borderWidth: 0.5
+            borderColor: #666666
+        }
+        pageHeader {
+            pageHeaderText: Manage Products
+        }
+
+        savedReport 62703 (
+            visibility: primaryDefault
+            view {
+                rowsPerPage: 50
+            }
+
+            displayColumn CLOTHING_ID (
+                sequence: 7
+            )
+
+            displayColumn COLOR_ID (
+                sequence: 5
+            )
+
+            displayColumn DEPARTMENT_ID (
+                sequence: 6
+            )
+
+            displayColumn PRODUCT_DETAILS (
+                sequence: 3
+            )
+
+            displayColumn PRODUCT_IMAGE (
+                sequence: 4
+            )
+
+            displayColumn PRODUCT_NAME (
+                sequence: 1
+            )
+
+            displayColumn UNIT_PRICE (
+                sequence: 2
+            )
+
+            sort (
+                column: PRODUCT_NAME
+                sort {
+                    sequence: 1
+                }
+            )
+
+        )
+
+    )
+
+    button create (
+        buttonName: CREATE
+        label: Create
+        layout {
+            sequence: 10
+            region: @products
+            slot: rightOfInteractiveReportSearchBar
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 15
+                clearCache: 15
+            }
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction edit-report-dialog-closed (
+        name: Edit Report - Dialog Closed
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @products
+        }
+
+        action native-refresh (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @products
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+)
+

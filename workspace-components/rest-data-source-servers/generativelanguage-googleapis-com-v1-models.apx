@@ -1,0 +1,7 @@
+restDataSourceServer generativelanguage-googleapis-com-v1-models (
+    name: generativelanguage-googleapis-com-v1-models
+    endpointUrl {
+        url: https://generativelanguage.googleapis.com/v1/models/
+    }
+)
+

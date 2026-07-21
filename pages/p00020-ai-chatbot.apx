@@ -1,0 +1,256 @@
+page 20 (
+    name: AI Chatbot
+    alias: AI-CHATBOT
+    title: AI Chatbot
+    appearance {
+        pageTemplate: @standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region chat-input (
+        name: Chat Input
+        title: Chat Input
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region new (
+        name: New
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT user_prompt AS "السؤال", 
+                       ai_response AS "رد المساعد الذكي", 
+                       message_date AS "الوقت"
+                FROM chat_messages
+                WHERE session_id = :P20_SESSION_ID
+                ORDER BY message_id ASC
+                ```
+            pageItemsToSubmit: P20_SESSION_ID
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--altRowsDefault
+                t-Report--rowHighlight
+            ]
+        }
+
+        column السؤال (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: السؤال
+            }
+            layout {
+                sequence: 10
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column الوقت (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: الوقت
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column "رد المساعد الذكي" (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: رد المساعد الذكي
+            }
+            layout {
+                sequence: 20
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P20_SESSION_ID (
+        type: hidden
+        settings {
+            valueProtected: false
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+    )
+
+    pageItem P20_USER_PROMPT (
+        type: textarea
+        label {
+            label: User Prompt
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @chat-input
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+            height: 5
+        }
+    )
+
+    button send (
+        buttonName: SEND
+        label: SEND
+        layout {
+            sequence: 20
+            region: @chat-input
+            slot: regionBody
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    process call-ai-service (
+        name: Call AI Service
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                    l_response CLOB;
+                BEGIN
+                    -- تسجيل بداية العملية
+                    apex_debug.info('=== بداية عملية الرد من الذكاء الاصطناعي ===');
+                    apex_debug.info('سؤال المستخدم: %s', :P20_USER_PROMPT);
+                    apex_debug.info('رقم الجلسة الحالي قبل الفحص: %s', :P20_SESSION_ID);
+                
+                    -- 1. إنشاء جلسة جديدة إذا لم تكن موجودة
+                    IF :P20_SESSION_ID IS NULL THEN
+                        INSERT INTO chat_sessions (user_name) VALUES (:APP_USER)
+                        RETURNING session_id INTO :P20_SESSION_ID;
+                        apex_debug.info('تم إنشاء جلسة جديدة برقم: %s', :P20_SESSION_ID);
+                    ELSE
+                        apex_debug.info('الجلسة موجودة مسبقاً برقم: %s', :P20_SESSION_ID);
+                    END IF;
+                
+                    -- 2. إرسال سؤال المستخدم إلى Groq
+                    apex_debug.info('جاري الاتصال بخدمة enterprise-support-bot...');
+                    
+                    l_response := apex_ai.generate(
+                        p_prompt            => :P20_USER_PROMPT,
+                        p_service_static_id => 'enterprise-support-bot' 
+                    );
+                    
+                    -- تسجيل نجاح الاستقبال (طباعة طول الرد للتأكد من وجود بيانات)
+                    apex_debug.info('تم استلام الرد بنجاح. طول النص: %s حرف', dbms_lob.getlength(l_response));
+                
+                    -- 3. حفظ المحادثة في قاعدة البيانات
+                    INSERT INTO chat_messages (session_id, user_prompt, ai_response)
+                    VALUES (:P20_SESSION_ID, :P20_USER_PROMPT, l_response);
+                    
+                    apex_debug.info('تم حفظ السؤال والإجابة في قاعدة البيانات بنجاح.');
+                
+                    -- 4. تفريغ مربع النص استعداداً للسؤال التالي
+                    :P20_USER_PROMPT := NULL;
+                    
+                    apex_debug.info('=== انتهاء العملية بنجاح ===');
+                
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        -- تسجيل الخطأ بالتفصيل في الـ Debug Log
+                        apex_debug.error('!!! حدث خطأ أثناء تنفيذ العملية !!!');
+                        apex_debug.error('كود ورسالة الخطأ: %s', SQLERRM);
+                        apex_debug.error('الـ Backtrace: %s', dbms_utility.format_error_backtrace);
+                
+                        -- اصطياد أي خطأ يظهر وعرضه للمستخدم كرسالة واضحة
+                        apex_error.add_error (
+                            p_message          => 'حدث خطأ أثناء التواصل مع الذكاء الاصطناعي: ' || SQLERRM,
+                            p_display_location => apex_error.c_inline_in_notification
+                        );
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 103525897418212990315
+        }
+    )
+
+)
+

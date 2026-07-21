@@ -1,0 +1,12 @@
+appItem SHOPPING_CART_ICON (
+    security {
+        sessionStateProtection: unrestricted
+    }
+)
+
+appItem SHOPPING_CART_ITEMS (
+    security {
+        sessionStateProtection: unrestricted
+    }
+)
+

@@ -1,0 +1,492 @@
+page 15 (
+    name: Product
+    alias: PRODUCT
+    title: Product
+    pageGroup: @administration
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @modal-dialog
+    }
+    dialog {
+        chained: false
+        resizable: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @administration-rights
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: dialogFooter
+        }
+        appearance {
+            template: @buttons-container
+            templateOptions: #DEFAULT#
+        }
+        settings {
+            outputAs: text
+        }
+    )
+
+    region product (
+        name: Product
+        type: form
+        source {
+            location: localDatabase
+            tableName: PRODUCTS
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+    )
+
+    pageItem P15_CLOTHING_ID (
+        type: selectList
+        label {
+            label: Clothing
+            alignment: right
+        }
+        lov {
+            type: sharedComponent
+            lov: @clothing-lookup-clothing
+        }
+        layout {
+            sequence: 120
+            region: @product
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        source {
+            formRegion: @product
+            column: CLOTHING_ID
+            dataType: number
+        }
+    )
+
+    pageItem P15_COLOR_ID (
+        type: selectList
+        label {
+            label: Color
+            alignment: right
+        }
+        lov {
+            type: sharedComponent
+            lov: @color-lookup-color
+        }
+        layout {
+            sequence: 100
+            region: @product
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        source {
+            formRegion: @product
+            column: COLOR_ID
+            dataType: number
+        }
+    )
+
+    pageItem P15_DEPARTMENT_ID (
+        type: selectList
+        label {
+            label: Department
+            alignment: right
+        }
+        lov {
+            type: sharedComponent
+            lov: @department-lookup-department
+        }
+        layout {
+            sequence: 110
+            region: @product
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        source {
+            formRegion: @product
+            column: DEPARTMENT_ID
+            dataType: number
+        }
+    )
+
+    pageItem P15_IMAGE_CHARSET (
+        type: hidden
+        layout {
+            sequence: 80
+            region: @product
+            slot: regionBody
+        }
+        source {
+            formRegion: @product
+            column: IMAGE_CHARSET
+            dataType: varchar2
+        }
+    )
+
+    pageItem P15_IMAGE_FILENAME (
+        type: hidden
+        layout {
+            sequence: 70
+            region: @product
+            slot: regionBody
+        }
+        source {
+            formRegion: @product
+            column: IMAGE_FILENAME
+            dataType: varchar2
+        }
+    )
+
+    pageItem P15_IMAGE_LAST_UPDATED (
+        type: hidden
+        layout {
+            sequence: 90
+            region: @product
+            slot: regionBody
+        }
+        source {
+            formRegion: @product
+            column: IMAGE_LAST_UPDATED
+            dataType: date
+        }
+    )
+
+    pageItem P15_IMAGE_MIME_TYPE (
+        type: hidden
+        layout {
+            sequence: 60
+            region: @product
+            slot: regionBody
+        }
+        source {
+            formRegion: @product
+            column: IMAGE_MIME_TYPE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P15_PRODUCT_DETAILS (
+        type: fileUpload
+        label {
+            label: Product Details
+            alignment: right
+        }
+        layout {
+            sequence: 40
+            region: @product
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 60
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @product
+            column: PRODUCT_DETAILS
+            dataType: blob
+        }
+    )
+
+    pageItem P15_PRODUCT_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @product
+            slot: regionBody
+        }
+        source {
+            formRegion: @product
+            column: PRODUCT_ID
+            dataType: number
+            queryOnly: true
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P15_PRODUCT_IMAGE (
+        type: fileUpload
+        label {
+            label: Product Image
+            alignment: right
+        }
+        layout {
+            sequence: 50
+            region: @product
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 60
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @product
+            column: PRODUCT_IMAGE
+            dataType: blob
+        }
+    )
+
+    pageItem P15_PRODUCT_NAME (
+        type: textField
+        label {
+            label: Product Name
+            alignment: right
+        }
+        settings {
+            trimSpaces: none
+        }
+        layout {
+            sequence: 20
+            region: @product
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @required-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            valueRequired: true
+            maxLength: 255
+        }
+        source {
+            formRegion: @product
+            column: PRODUCT_NAME
+            dataType: varchar2
+        }
+    )
+
+    pageItem P15_UNIT_PRICE (
+        type: numberField
+        label {
+            label: Unit Price
+            alignment: right
+        }
+        layout {
+            sequence: 30
+            region: @product
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @product
+            column: UNIT_PRICE
+            dataType: number
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button create (
+        buttonName: CREATE
+        label: Create
+        layout {
+            sequence: 40
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P15_PRODUCT_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: Delete
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: delete
+        }
+        appearance {
+            buttonTemplate: @text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--danger
+                t-Button--simple
+            ]
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P15_PRODUCT_ID
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: Apply Changes
+        layout {
+            sequence: 30
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P15_PRODUCT_ID
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: Cancel Dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        execution {
+            sequence: 50
+        }
+        advanced {
+            executionMappingIdentifier: 6219529534035592
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: CREATE,SAVE,DELETE
+        }
+    )
+
+    process initialize-form-product (
+        name: Initialize form Product
+        type: formInitialization
+        formRegion: @product
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 6218792420035591
+        }
+    )
+
+    process process-form-product (
+        name: Process form Product
+        type: formAutoRowProcessing
+        formRegion: @product
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 6219104777035592
+        }
+    )
+
+)
+

@@ -1,0 +1,442 @@
+page 1 (
+    name: Products
+    alias: HOME
+    title: Shopping Online
+    appearance {
+        pageTemplate: @left-side-column
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region button-bar (
+        name: Button Bar
+        type: staticContent
+        source {
+            htmlCode: <div id="active_facets"></div>
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @buttons-container
+            templateOptions: [
+                #DEFAULT#
+                t-ButtonRegion--noPadding
+                t-ButtonRegion--noUI
+            ]
+        }
+    )
+
+    region search (
+        name: Search
+        type: facetedSearch
+        source {
+            filteredRegion: @search-results
+        }
+        layout {
+            sequence: 10
+            slot: leftColumn
+            columnSpan: 4
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--noPadding
+                t-Region--hideHeader
+                t-Region--scrollBody
+            ]
+        }
+        accessibility {
+            landmarkLabel: Filters
+        }
+        settings {
+            compactNosThreshold: 10000
+            showCurrentFacets: selector
+            currentFacetsSelector: #active_facets
+            showTotalRowCount: true
+            totalRowCountLabel: Total Products
+            showCharts: false
+        }
+
+        facet P1_CLOTHING_ID (
+            type: checkboxGroup
+            label {
+                label: Clothing
+            }
+            lov {
+                type: sharedComponent
+                lov: @clothing-lookup-clothing
+            }
+            layout {
+                sequence: 60
+            }
+            listEntries {
+                maxDisplayedEntries: 7
+            }
+            source {
+                databaseColumn: CLOTHING_ID
+            }
+        )
+
+        facet P1_COLOR_ID (
+            type: checkboxGroup
+            label {
+                label: "Color  "
+            }
+            lov {
+                type: sharedComponent
+                lov: @color-lookup-color
+            }
+            layout {
+                sequence: 40
+            }
+            listEntries {
+                maxDisplayedEntries: 7
+            }
+            source {
+                databaseColumn: COLOR_ID
+            }
+        )
+
+        facet P1_DEPARTMENT_ID (
+            type: checkboxGroup
+            label {
+                label: "Department "
+            }
+            lov {
+                type: sharedComponent
+                lov: @department-lookup-department
+            }
+            layout {
+                sequence: 30
+            }
+            listEntries {
+                maxDisplayedEntries: 7
+            }
+            source {
+                databaseColumn: DEPARTMENT_ID
+            }
+        )
+
+        facet P1_SEARCH (
+            type: search
+            label {
+                label: Search
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dbColumns: COLOR_ID,DEPARTMENT_ID,CLOTHING_ID,PRODUCT_NAME,IMAGE_MIME_TYPE,IMAGE_FILENAME,IMAGE_CHARSET
+            }
+        )
+
+        facet P1_UNIT_PRICE (
+            type: range
+            label {
+                label: Unit Price
+            }
+            settings {
+                selectMultiple: true
+            }
+            lov {
+                type: staticValues
+                staticValues: STATIC2:<10;|10,10 - 20;10|20,20 - 25;20|25,25 - 35;25|35,>=35;35|
+            }
+            layout {
+                sequence: 50
+            }
+            listEntries {
+                maxDisplayedEntries: 7
+            }
+            source {
+                databaseColumn: UNIT_PRICE
+                dataType: number
+            }
+        )
+
+    )
+
+    region search-results (
+        name: Search Results
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT "PRODUCT_ID",
+                    "PRODUCT_NAME",
+                    "UNIT_PRICE",
+                    "PRODUCT_DETAILS",
+                    "PRODUCT_IMAGE",
+                    "IMAGE_MIME_TYPE",
+                    "IMAGE_FILENAME",
+                    "IMAGE_CHARSET",
+                    "IMAGE_LAST_UPDATED",
+                    "COLOR_ID",
+                    (
+                            SELECT l1."COLOR"
+                            FROM   "COLOR_LOOKUP" l1
+                            WHERE  l1."COLOR_ID" = m."COLOR_ID") "COLOR_ID_L$1",
+                    "DEPARTMENT_ID",
+                    (
+                            SELECT l2."DEPARTMENT"
+                            FROM   "DEPARTMENT_LOOKUP" l2
+                            WHERE  l2."DEPARTMENT_ID" = m."DEPARTMENT_ID") "DEPARTMENT_ID_L$2",
+                    "CLOTHING_ID",
+                    (
+                            SELECT l3."CLOTHING"
+                            FROM   "CLOTHING_LOOKUP" l3
+                            WHERE  l3."CLOTHING_ID" = m."CLOTHING_ID") "CLOTHING_ID_L$3",
+                    b.brand
+                FROM   "PRODUCTS" m,
+                    json_table (m.product_details, '$' columns ( brand varchar2(4000) path '$.brand') ) b
+                ```
+        }
+        orderBy {
+            type: item
+            item: {
+                itemName: P1_ORDER_BY
+                orderBys: {
+                    PRODUCT_NAME: "PRODUCT_NAME" asc
+                }
+            }
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @cards-container
+            templateOptions: [
+                #DEFAULT#
+                t-CardsRegion--styleA
+            ]
+        }
+        card {
+            primaryKeyColumn1: PRODUCT_ID
+        }
+        title {
+            column: PRODUCT_NAME
+        }
+        subtitle {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                <small>&BRAND.</small><br />
+                <b class="u-success-text u-pullRight" id="message_&PRODUCT_ID.">
+                {if QUANTITY/} &QUANTITY. in cart {endif/}
+                </b>
+                <b>$&UNIT_PRICE.</b>
+                ```
+        }
+        media {
+            source: blobColumn
+            blobColumn: PRODUCT_IMAGE
+            position: first
+            appearance: widescreen
+        }
+
+        action action (
+            type: fullCard
+            layout {
+                sequence: 10
+            }
+            behavior {
+                target: {
+                    page: 18
+                    items: {
+                        P18_PRODUCT_ID: &PRODUCT_ID.
+                    }
+                    clearCache: 18
+                }
+            }
+        )
+
+    )
+
+    region shopping-online (
+        name: Shopping Online
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @hero
+            templateOptions: #DEFAULT#
+        }
+        image {
+            fileUrl: #APP_FILES#icons/app-icon-512.png
+        }
+    )
+
+    pageItem P1_ORDER_BY (
+        type: selectList
+        label {
+            label: Order By
+            alignment: right
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC2:Product Name;PRODUCT_NAME
+            displayExtraValues: false
+            displayNullValue: false
+        }
+        layout {
+            sequence: 10
+            region: @search-results
+            slot: sortOrder
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        validation {
+            valueRequired: true
+        }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
+        default {
+            type: static
+            staticValue: PRODUCT_NAME
+        }
+    )
+
+    button reset (
+        buttonName: RESET
+        label: Reset
+        layout {
+            sequence: 10
+            region: @button-bar
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--noUI
+                t-Button--iconLeft
+            ]
+            icon: fa-undo
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 1
+                clearCache: 1
+                action: resetRegions
+            }
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction show-success-message (
+        name: Show Success Message
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @search-results
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    var productAction   = this.data.P18_ACTION,
+                    productQuantity = this.data.P18_QUANTITY,
+                    productCard$  = apex.jQuery("#message_" + this.data.P18_PRODUCT_ID);
+                    
+                    if (productAction === 'ADD') {
+                            productCard$.text("Added " + productQuantity + " to cart!");
+                    } else if (productAction === 'EDIT') {
+                            productCard$.text("Updated quantity to " + productQuantity + "!");
+                    } else if (productAction === 'DELETE') {
+                            productCard$.text("Removed from cart!");
+                     }
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    dynamicAction update-shopping-cart-header (
+        name: Update Shopping Cart Header
+        execution {
+            sequence: 20
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @search-results
+        }
+        clientSideCondition {
+            type: jsExpression
+            javaScriptExpression:
+                ```javascript-browser
+                parseInt(this.data.P18_SHOPPING_CART_ITEMS) > 0
+                
+                ```
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    // Update Badge Text
+                    apex.jQuery(".js-shopping-cart-item .t-Button-badge").text(this.data.P18_SHOPPING_CART_ITEMS);
+                    
+                    // Update Icon
+                    apex.jQuery(".js-shopping-cart-item .t-Icon").removeClass('fa-cart-empty').addClass('fa-cart-full');
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+        action native-javascript-code-2 (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    // Update Badge Text
+                    apex.jQuery(".js-shopping-cart-item .t-Button-badge").text('');
+                    
+                    // Update Icon
+                    apex.jQuery(".js-shopping-cart-item .t-Icon").removeClass('fa-cart-full').addClass('fa-cart-empty');
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireWhenEventResultIs: false
+                fireOnInit: false
+            }
+        )
+
+    )
+
+)
+

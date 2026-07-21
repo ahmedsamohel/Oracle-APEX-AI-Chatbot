@@ -1,0 +1,67 @@
+lov access-roles (
+    name: ACCESS_ROLES
+    source {
+        type: sqlQuery
+        sqlQuery:
+            ```sql
+            select role_name d, role_id r
+            from APEX_APPL_ACL_ROLES where application_id = :APP_ID 
+            order by 1
+            ```
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+
+lov clothing-lookup-clothing (
+    name: CLOTHING_LOOKUP.CLOTHING
+    source {
+        tableName: CLOTHING_LOOKUP
+    }
+    columnMapping {
+        return: CLOTHING_ID
+        display: CLOTHING
+        defaultSort: CLOTHING
+    }
+)
+
+lov color-lookup-color (
+    name: COLOR_LOOKUP.COLOR
+    source {
+        tableName: COLOR_LOOKUP
+    }
+    columnMapping {
+        return: COLOR_ID
+        display: COLOR
+        defaultSort: COLOR
+    }
+)
+
+lov department-lookup-department (
+    name: DEPARTMENT_LOOKUP.DEPARTMENT
+    source {
+        tableName: DEPARTMENT_LOOKUP
+    }
+    columnMapping {
+        return: DEPARTMENT_ID
+        display: DEPARTMENT
+        defaultSort: DEPARTMENT
+    }
+)
+
+lov email-username-format (
+    name: EMAIL_USERNAME_FORMAT
+    source {
+        location: staticValues
+    }
+
+    entry email (
+        sequence: 1
+        display: Email Addresses
+        return: EMAIL
+    )
+
+)
+

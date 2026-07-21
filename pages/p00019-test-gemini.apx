@@ -1,0 +1,148 @@
+page 19 (
+    name: Test Gemini
+    alias: TEST-GEMINI
+    title: Test Gemini
+    appearance {
+        pageTemplate: @standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P19_PROMPT (
+        type: textarea
+        label {
+            label: " Your Message"
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            slot: body
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+            height: 5
+        }
+    )
+
+    pageItem P19_RESPONSE (
+        type: textarea
+        label {
+            label: Gemini Response
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            slot: body
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+            height: 5
+        }
+    )
+
+    button send (
+        buttonName: SEND
+        label: SEND
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            buttonTemplate: @text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    process call-gemini-api (
+        name: Call Gemini API
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                    l_response CLOB;
+                    l_url VARCHAR2(500);
+                    l_body VARCHAR2(4000);
+                    l_api_key VARCHAR2(200) := 'AQ.Ab8RN6KFpiI1IG7clhMje7W-Gk35QLz7Vny5vUAy6CZEa3WCoQ';
+                BEGIN 
+                   l_url := 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+                    
+                    l_body := '{
+                        "model": "gemini-1.5-flash-latest",
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": "' || REPLACE(:P19_PROMPT, '"', '\"') || '"
+                            }
+                        ],
+                        "max_tokens": 1024,
+                        "temperature": 0.7
+                    }';
+                    
+                    apex_web_service.g_request_headers(1).name := 'Authorization';
+                    apex_web_service.g_request_headers(1).value := 'Bearer ' || l_api_key;
+                    apex_web_service.g_request_headers(2).name := 'Content-Type';
+                    apex_web_service.g_request_headers(2).value := 'application/json';
+                    
+                    l_response := apex_web_service.make_rest_request(
+                        p_url => l_url,
+                        p_http_method => 'POST',
+                        p_body => l_body
+                    );
+                    
+                    :P19_RESPONSE := l_response;
+                    
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        :P19_RESPONSE := 'Error: ' || SQLERRM;
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 18814423554287271511
+        }
+    )
+
+)
+

@@ -1,0 +1,331 @@
+list access-control (
+    name: Access Control
+    config {
+        buildOption: @feature-access-control
+    }
+
+    entry access-control (
+        label: Access Control
+        icon {
+            imageIconCssClasses: fa-key
+        }
+        layout {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 10010
+            }
+        }
+        userDefinedAttributes {
+            1: Change access control settings and disable access control
+        }
+    )
+
+    entry users (
+        label: Users
+        icon {
+            imageIconCssClasses: fa-users
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 10011
+                action: resetPagination
+            }
+        }
+        userDefinedAttributes {
+            1: Set level of access for authenticated users of this application
+        }
+    )
+
+)
+
+list application-administration (
+    name: Application Administration
+
+    entry clothing-lookup (
+        label: Clothing Lookup
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 3
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+    entry color-lookup (
+        label: Color Lookup
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 30
+        }
+        link {
+            target: {
+                page: 5
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+    entry customers (
+        label: Customers
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 40
+        }
+        link {
+            target: {
+                page: 7
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+    entry dashboard (
+        label: Dashboard
+        icon {
+            imageIconCssClasses: fa-dashboard
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 2
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+    entry department-lookup (
+        label: Department Lookup
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 50
+        }
+        link {
+            target: {
+                page: 9
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+    entry manage-products (
+        label: Manage Products
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 80
+        }
+        link {
+            target: {
+                page: 14
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+    entry product-reviews (
+        label: Product Reviews
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 60
+        }
+        link {
+            target: {
+                page: 11
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+    entry stores (
+        label: Stores
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 70
+        }
+        link {
+            target: {
+                page: 12
+            }
+        }
+        userDefinedAttributes {
+            1: Manage component
+        }
+    )
+
+)
+
+list navigation-bar (
+    name: Navigation Bar
+
+    entry administration (
+        label: Administration
+        icon {
+            imageIconCssClasses: fa-wrench
+        }
+        layout {
+            sequence: 5
+        }
+        link {
+            target: {
+                page: 10000
+                clearCache: 10000
+            }
+        }
+    )
+
+    entry app-user (
+        label: &APP_USER.
+        icon {
+            imageIconCssClasses: fa-user
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        userDefinedAttributes {
+            2: has-username
+        }
+    )
+
+    entry install-app (
+        label: Install App
+        icon {
+            imageIconCssClasses: fa-cloud-download
+        }
+        layout {
+            sequence: 1
+        }
+        isCurrent {
+            type: never
+        }
+        link {
+            target: {
+                type: url
+                url: #action$a-pwa-install
+            }
+        }
+        userDefinedAttributes {
+            2: a-pwaInstall
+        }
+    )
+
+    entry list_item (
+        label: ---
+        layout {
+            sequence: 20
+            parentEntry: @app-user
+        }
+        link {
+            target: {
+                type: url
+                url: separator
+            }
+        }
+        serverSideCondition {
+            type: userIsAuthenticated
+        }
+    )
+
+    entry shopping-cart (
+        label: Shopping Cart
+        icon {
+            imageIconCssClasses: &SHOPPING_CART_ICON.
+        }
+        layout {
+            sequence: 1
+        }
+        link {
+            target: {
+                page: 17
+                clearCache: 17
+            }
+        }
+        userDefinedAttributes {
+            1: &SHOPPING_CART_ITEMS.
+            2: js-shopping-cart-item
+        }
+    )
+
+)
+
+list navigation-menu (
+    name: Navigation Menu
+
+    entry administration (
+        label: Administration
+        icon {
+            imageIconCssClasses: fa-user-wrench
+        }
+        layout {
+            sequence: 10000
+        }
+        link {
+            target: {
+                page: 10000
+            }
+        }
+        security {
+            authorizationScheme: @administration-rights
+        }
+    )
+
+    entry products (
+        label: Products
+        icon {
+            imageIconCssClasses: fa-cards
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 1
+            }
+        }
+    )
+
+)
+

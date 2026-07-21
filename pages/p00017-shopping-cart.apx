@@ -1,0 +1,534 @@
+page 17 (
+    name: Shopping Cart
+    alias: SHOPPING-CART
+    title: Shopping Cart
+    appearance {
+        pageTemplate: @standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    css {
+        inline:
+            ```css
+            img {
+                    width: 150px;
+                    height: 150px;
+                }
+            ```
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region order-information (
+        name: " Order Information"
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region shopping-cart (
+        name: Shopping Cart
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT seq_id item,
+                    p.product_image,
+                    p.product_id,
+                    p.product_name name,
+                    p.unit_price,
+                    n002               quantity,
+                    p.unit_price* n002 subtotal,
+                    b.brand
+                FROM   apex_collections a,
+                    products p,
+                    json_table (p.product_details, '$' columns ( brand varchar2(4000) path '$.brand') ) b
+                WHERE  collection_name = 'PRODUCTS'
+                AND    p.product_id = a.n001
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @cards-container
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            layout: horizontal
+        }
+        card {
+            primaryKeyColumn1: ITEM
+        }
+        title {
+            column: NAME
+        }
+        subtitle {
+            column: BRAND
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                Quantity: &QUANTITY.
+                
+                ```
+        }
+        secondaryBody {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                <b>Unit Price: &UNIT_PRICE. </b> <BR>
+                <b>Subtotal: &SUBTOTAL. </b>
+                ```
+        }
+        media {
+            source: blobColumn
+            blobColumn: PRODUCT_IMAGE
+        }
+        messages {
+            whenNoDataFound: Your shopping cart is empty!
+            noDataFoundIcon: fa-cart-empty
+        }
+
+        action action (
+            label: Edit
+            layout {
+                sequence: 10
+            }
+            behavior {
+                target: {
+                    page: 18
+                    items: {
+                        P18_PRODUCT_ID: &PRODUCT_ID.
+                    }
+                }
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-cart-edit
+            }
+        )
+
+    )
+
+    pageItem "P17_CUSTOMER_EMAIL	" (
+        type: textField
+        label {
+            label: "Customer Email	"
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @order-information
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+        }
+    )
+
+    pageItem P17_CUSTOMER_FULLNAME (
+        type: textField
+        label {
+            label: Customer Name
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @order-information
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+        }
+    )
+
+    pageItem P17_CUSTOMER_ID (
+        type: hidden
+        layout {
+            sequence: 40
+            region: @order-information
+            slot: regionBody
+        }
+    )
+
+    pageItem P17_ORDER_ID (
+        type: hidden
+        layout {
+            sequence: 30
+            region: @order-information
+            slot: regionBody
+        }
+    )
+
+    pageItem P17_STORE (
+        type: selectList
+        label {
+            label: Store
+            alignment: left
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select STORES.STORE_NAME as STORE_NAME,
+                    STORES.STORE_ID as STORE_ID
+                from STORES STORES
+                ```
+        }
+        layout {
+            sequence: 50
+            region: @order-information
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    button clear (
+        buttonName: Clear
+        label: "Clear Shopping Cart	"
+        layout {
+            sequence: 70
+            region: @order-information
+            slot: change
+        }
+        appearance {
+            buttonTemplate: @text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-cart-empty
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: SHOPPING_CART_ITEMS
+        }
+    )
+
+    button proceed (
+        buttonName: Proceed
+        label: "Proceed to Checkout	"
+        layout {
+            sequence: 60
+            region: @order-information
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: SHOPPING_CART_ITEMS
+        }
+    )
+
+    dynamicAction update-shopping-cart-header (
+        name: Update Shopping Cart Header
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @shopping-cart
+        }
+        clientSideCondition {
+            type: jsExpression
+            javaScriptExpression:
+                ```javascript-browser
+                parseInt(this.data.P18_SHOPPING_CART_ITEMS) > 0
+                
+                ```
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    // Update Badge Text
+                    apex.jQuery(".js-shopping-cart-item .t-Button-badge").text(this.data.P18_SHOPPING_CART_ITEMS);
+                    
+                    // Update Icon
+                    apex.jQuery(".js-shopping-cart-item .t-Icon").removeClass('fa-cart-empty').addClass('fa-cart-full');
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+        action native-javascript-code-2 (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    // Update Badge Text
+                    apex.jQuery(".js-shopping-cart-item .t-Button-badge").text('');
+                    
+                    // Update Icon
+                    apex.jQuery(".js-shopping-cart-item .t-Icon").removeClass('fa-cart-full').addClass('fa-cart-empty');
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireWhenEventResultIs: false
+                fireOnInit: false
+            }
+        )
+
+        action native-refresh (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @shopping-cart
+            }
+            execution {
+                sequence: 20
+                fireOnInit: false
+            }
+        )
+
+        action native-refresh-2 (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @shopping-cart
+            }
+            execution {
+                sequence: 20
+                fireWhenEventResultIs: false
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    validation validate-email (
+        name: "Validate Email	"
+        execution {
+            sequence: 20
+        }
+        validation {
+            type: itemIsNotNull
+            item: P17_CUSTOMER_EMAIL
+        }
+        error {
+            errorMessage: Please enter your email address
+            associatedItem: @"P17_CUSTOMER_EMAIL	"
+        }
+        serverSideCondition {
+            whenButtonPressed: @proceed
+        }
+    )
+
+    validation validate-name (
+        name: "Validate Name	"
+        execution {
+            sequence: 10
+        }
+        validation {
+            type: itemIsNotNull
+            item: P17_CUSTOMER_FULLNAME
+        }
+        error {
+            errorMessage: Please enter your name
+            associatedItem: @P17_CUSTOMER_FULLNAME
+        }
+        serverSideCondition {
+            whenButtonPressed: @proceed
+        }
+    )
+
+    validation validate-store (
+        name: "Validate Store	"
+        execution {
+            sequence: 30
+        }
+        validation {
+            type: itemIsNotNull
+            item: P17_STORE
+        }
+        error {
+            errorMessage: Please select a store
+            associatedItem: @P17_STORE
+        }
+        serverSideCondition {
+            whenButtonPressed: @proceed
+        }
+    )
+
+    process checkout (
+        name: Checkout
+        type: invokeApi
+        invoke {
+            package: MANAGE_ORDERS
+            procedureOrFunction: CREATE_ORDER
+        }
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage: Order successfully created: &P17_ORDER_ID.
+        }
+        advanced {
+            executionMappingIdentifier: 5284848640128941
+        }
+        serverSideCondition {
+            whenButtonPressed: @proceed
+        }
+
+        parameter p_customer (
+            parameter {
+                hasDefault: true
+            }
+            value {
+                type: item
+                item: P17_CUSTOMER_FULLNAME
+            }
+            advanced {
+                displaySequence: 10
+            }
+        )
+
+        parameter p_customer_email (
+            value {
+                type: item
+                item: P17_CUSTOMER_FULLNAME
+            }
+            advanced {
+                displaySequence: 20
+            }
+        )
+
+        parameter p_customer_id (
+            parameter {
+                direction: out
+                dataType: number
+            }
+            value {
+                item: P17_CUSTOMER_ID
+            }
+            advanced {
+                displaySequence: 50
+            }
+        )
+
+        parameter p_order_id (
+            parameter {
+                direction: out
+                dataType: number
+            }
+            value {
+                item: P17_ORDER_ID
+            }
+            advanced {
+                displaySequence: 40
+            }
+        )
+
+        parameter p_store (
+            parameter {
+                dataType: number
+            }
+            value {
+                type: item
+                item: P17_STORE
+            }
+            advanced {
+                displaySequence: 30
+            }
+        )
+
+    )
+
+    process clear-shopping-cart (
+        name: Clear Shopping Cart
+        type: invokeApi
+        invoke {
+            package: MANAGE_ORDERS
+            procedureOrFunction: CLEAR_CART
+        }
+        execution {
+            sequence: 20
+        }
+        advanced {
+            executionMappingIdentifier: 5285444006128947
+        }
+        serverSideCondition {
+            whenButtonPressed: @clear
+        }
+    )
+
+    branch (
+        name: Go to Orders
+        execution {
+            sequence: 10
+        }
+        behavior {
+            target: {
+                page: 16
+                items: {
+                    P16_ORDER: &P17_ORDER_ID.
+                }
+                clearCache: 16
+            }
+        }
+        serverSideCondition {
+            whenButtonPressed: @proceed
+        }
+    )
+
+    branch (
+        name: Go to Products
+        execution {
+            sequence: 20
+        }
+        behavior {
+            target: {
+                page: 1
+                clearCache: 1
+            }
+        }
+    )
+
+)
+

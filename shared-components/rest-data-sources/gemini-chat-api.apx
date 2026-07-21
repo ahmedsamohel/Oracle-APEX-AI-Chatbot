@@ -1,0 +1,126 @@
+restDataSource gemini-chat-api (
+    name: Gemini_Chat_API
+    source {
+        type: http
+        remoteServer: @generativelanguage-googleapis-com-v1-models
+        urlPathPrefix: /gemini-1.5-flash:generateContent
+    }
+
+    operation delete (
+        label: DELETE - /:id
+        operation {
+            urlPattern: /:id
+            httpMethod: delete
+            databaseOperation: delete
+        }
+        requestBody {
+            versionNumber: 1
+        }
+    )
+
+    operation get (
+        label: GET
+        operation {
+            urlPattern: .
+            httpMethod: get
+            databaseOperation: fetchRows
+        }
+    )
+
+    operation post (
+        label: POST - ?key=AQ.Ab8RN6K8rOB3XLild4dXWoatpDLUI_WERa1VnirL8I9XdtmwZA
+        operation {
+            urlPattern: ?key=AQ.Ab8RN6K8rOB3XLild4dXWoatpDLUI_WERa1VnirL8I9XdtmwZA
+            httpMethod: post
+            databaseOperation: insert
+        }
+        requestBody {
+            template:
+                ```
+                {
+                  "contents": [
+                    {
+                      "role": "user",
+                      "parts": [
+                        {
+                          "text": "#PROMPT#"
+                        }
+                      ]
+                    }
+                  ],
+                  "generationConfig": {
+                    "maxOutputTokens": 1024,
+                    "temperature": 0.7
+                  }
+                }
+                ```
+            versionNumber: 1
+        }
+    )
+
+    operation put (
+        label: PUT - /:id
+        operation {
+            urlPattern: /:id
+            httpMethod: put
+            databaseOperation: update
+        }
+        requestBody {
+            versionNumber: 1
+        }
+    )
+
+    parameter prompt (
+        name: #PROMPT#
+        operation: @post
+        parameter {
+            type: requestOrResponseBody
+        }
+        validation {
+            required: true
+        }
+    )
+
+    dataProfile {
+        name: Gemini_Chat_API
+        rowSelector: items
+    }
+
+    dataProfileColumn column-1-id (
+        columnName: COLUMN_1_ID
+        source {
+            sequence: 1
+            dataType: number
+        }
+        parsing {
+            pathExpression: id
+        }
+    )
+
+    dataProfileColumn column-2-name (
+        columnName: COLUMN_2_NAME
+        source {
+            sequence: 2
+            dataType: varchar2
+            maxLength: 2000
+        }
+        parsing {
+            pathExpression: name
+        }
+    )
+
+    dataProfileColumn column-3-hiredate (
+        columnName: COLUMN_3_HIREDATE
+        source {
+            sequence: 3
+            dataType: date
+        }
+        parsing {
+            pathExpression: hire-date
+            formatMask: YYYY-MM-DD"T"HH24:MI:SS
+            hasTimeZone: false
+        }
+    )
+
+)
+

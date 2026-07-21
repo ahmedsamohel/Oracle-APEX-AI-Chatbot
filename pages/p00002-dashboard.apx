@@ -1,0 +1,277 @@
+page 2 (
+    name: Dashboard
+    alias: DASHBOARD
+    title: Dashboard
+    pageGroup: @administration
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @modal-dialog
+        templateOptions: [
+            #DEFAULT#
+            ui-dialog--stretch
+            t-Dialog--noPadding
+        ]
+    }
+    dialog {
+        resizable: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @administration-rights
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region order-status (
+        name: Order Status
+        type: chart
+        layout {
+            sequence: 30
+            slot: contentBody
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        security {
+            escapeSpecialChars: false
+        }
+        chart {
+            type: pie
+        }
+        value {
+            format: decimal
+            decimalPlaces: 0
+        }
+        legend {
+            show: false
+        }
+
+        series series (
+            name: Series 1
+            execution {
+                sequence: 10
+            }
+            source {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select ORDER_STATUS, count(ORDER_ID) value
+                    from CUSTOMER_ORDER_PRODUCTS
+                    where ORDER_ID is not null
+                    group by ORDER_STATUS
+                    order by 2 desc
+                    ```
+            }
+            columnMapping {
+                label: ORDER_STATUS
+                value: VALUE
+            }
+            label {
+                show: true
+            }
+            performance {
+                maxRowsToProcess: 20
+            }
+        )
+
+    )
+
+    region product-reviews (
+        name: Product Reviews
+        type: chart
+        layout {
+            sequence: 40
+            slot: contentBody
+            startNewRow: false
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        security {
+            escapeSpecialChars: false
+        }
+        legend {
+            show: false
+        }
+
+        series series (
+            name: Series 1
+            execution {
+                sequence: 10
+            }
+            source {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select PRODUCT_NAME, AVG_RATING
+                    from PRODUCT_REVIEWS
+                    where AVG_RATING is not null
+                    order by 2 desc
+                    ```
+            }
+            columnMapping {
+                label: PRODUCT_NAME
+                value: AVG_RATING
+            }
+            performance {
+                maxRowsToProcess: 20
+            }
+        )
+
+        axis x (
+            name: x
+            majorTicks {
+                show: auto
+            }
+        )
+
+        axis y (
+            name: y
+            value {
+                format: decimal
+                decimalPlaces: 0
+            }
+            majorTicks {
+                show: auto
+            }
+        )
+
+    )
+
+    region top-10-products (
+        name: Top 10 Products
+        type: chart
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        security {
+            escapeSpecialChars: false
+        }
+        legend {
+            show: false
+        }
+
+        series series (
+            name: Series 1
+            execution {
+                sequence: 10
+            }
+            source {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select PRODUCT_NAME, sum(TOTAL_SALES) value
+                    from PRODUCT_ORDERS
+                    where TOTAL_SALES is not null
+                    group by PRODUCT_NAME
+                    order by 2 desc
+                    ```
+            }
+            columnMapping {
+                label: PRODUCT_NAME
+                value: VALUE
+            }
+            performance {
+                maxRowsToProcess: 20
+            }
+        )
+
+        axis x (
+            name: x
+            majorTicks {
+                show: auto
+            }
+        )
+
+        axis y (
+            name: y
+            value {
+                format: decimal
+                decimalPlaces: 0
+            }
+            majorTicks {
+                show: auto
+            }
+        )
+
+    )
+
+    region top-5-stores (
+        name: Top 5 Stores
+        type: chart
+        layout {
+            sequence: 20
+            slot: contentBody
+            startNewRow: false
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        security {
+            escapeSpecialChars: false
+        }
+        chart {
+            type: pie
+        }
+        value {
+            format: decimal
+            decimalPlaces: 0
+        }
+        legend {
+            show: false
+        }
+
+        series series (
+            name: Series 1
+            execution {
+                sequence: 10
+            }
+            source {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select STORE_NAME, sum(TOTAL_SALES) value
+                    from STORE_ORDERS
+                    where TOTAL_SALES is not null
+                    group by STORE_NAME
+                    order by 2 desc
+                    ```
+            }
+            columnMapping {
+                label: STORE_NAME
+                value: VALUE
+            }
+            label {
+                show: true
+            }
+            performance {
+                maxRowsToProcess: 20
+            }
+        )
+
+    )
+
+)
+

@@ -1,0 +1,406 @@
+page 18 (
+    name: Add to Cart
+    alias: ADD-TO-CART
+    title: Manage your Cart
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        width: 700
+        height: 900
+        resizable: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region buttons-bar (
+        name: " Buttons Bar"
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: dialogFooter
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region customer-reviews (
+        name: Customer Reviews
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT m.rating,
+                    m.review
+                FROM   products p,
+                    product_reviews m
+                WHERE  p.product_name = m.product_name
+                    AND p.product_id = :P18_PRODUCT_ID
+                    order by m.rating desc
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: contentBody
+        }
+        appearance {
+            template: @cards-container
+            templateOptions: [
+                #DEFAULT#
+                t-CardsRegion--styleC
+            ]
+        }
+        componentAppearance {
+            layout: horizontal
+        }
+        title {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                <b>Review:</b> &REVIEW. <br>
+                <b>Rating:</b> &RATING.
+                ```
+        }
+        messages {
+            whenNoDataFound: There are no customer reviews yet.
+        }
+    )
+
+    region product (
+        name: Product
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT product_id,
+                    product_name,
+                    unit_price,
+                    product_details,
+                    product_image,
+                    image_mime_type,
+                    image_filename,
+                    image_charset,
+                    image_last_updated,
+                    color_id,
+                    department_id,
+                    clothing_id,
+                    d.description,
+                    b.brand
+                FROM   products p,
+                    json_table (p.product_details, '$' columns ( description varchar2(4000) path '$.description') ) d,
+                    json_table (p.product_details, '$' columns ( brand       varchar2(4000) path '$.brand') ) b
+                WHERE  product_id = :P18_PRODUCT_ID
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @cards-container
+            templateOptions: [
+                #DEFAULT#
+                t-CardsRegion--styleC
+            ]
+        }
+        componentAppearance {
+            layout: float
+        }
+        card {
+            primaryKeyColumn1: PRODUCT_ID
+        }
+        title {
+            column: PRODUCT_NAME
+        }
+        subtitle {
+            column: BRAND
+        }
+        body {
+            column: DESCRIPTION
+        }
+        secondaryBody {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                Price: &UNIT_PRICE.
+                
+                ```
+        }
+        media {
+            source: blobColumn
+            blobColumn: PRODUCT_IMAGE
+            position: first
+        }
+    )
+
+    pageItem P18_ACTION (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @buttons-bar
+            slot: regionBody
+        }
+    )
+
+    pageItem P18_PRODUCT_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @buttons-bar
+            slot: regionBody
+        }
+    )
+
+    pageItem P18_QUANTITY (
+        type: selectList
+        label {
+            label: Quantity
+            alignment: left
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:1;1,2;2,3;3,4;4,5;5
+            displayExtraValues: false
+            displayNullValue: false
+        }
+        layout {
+            sequence: 40
+            region: @buttons-bar
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @required
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    pageItem P18_SHOPPING_CART_ITEMS (
+        type: hidden
+        layout {
+            sequence: 30
+            region: @buttons-bar
+            slot: regionBody
+        }
+    )
+
+    button add (
+        buttonName: Add
+        label: Add to Cart
+        layout {
+            sequence: 50
+            region: @buttons-bar
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+        serverSideCondition {
+            type: itemIsZero
+            item: P18_QUANTITY
+        }
+    )
+
+    button delete (
+        buttonName: Delete
+        label: "Remove from Cart	"
+        layout {
+            sequence: 70
+            region: @buttons-bar
+            slot: edit
+        }
+        appearance {
+            buttonTemplate: @text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--danger
+                t-Button--link
+                t-Button--gapRight
+            ]
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+        serverSideCondition {
+            type: itemIsNotZero
+            item: P18_QUANTITY
+        }
+    )
+
+    button edit (
+        buttonName: Edit
+        label: "Update Quantity	"
+        layout {
+            sequence: 60
+            region: @buttons-bar
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+        serverSideCondition {
+            type: itemIsNotZero
+            item: P18_QUANTITY
+        }
+    )
+
+    computation p18-quantity (
+        itemName: P18_QUANTITY
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        computation {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                RETURN manage_orders.product_exists(p_product => :P18_PRODUCT_ID);
+                
+                ```
+        }
+    )
+
+    process add-product (
+        name: Add Product
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    IF manage_orders.product_exists(p_product => :P18_PRODUCT_ID) = 0 THEN
+                        manage_orders.add_product (p_product  => :P18_PRODUCT_ID,
+                                                p_quantity => :P18_QUANTITY	);
+                    END IF;
+                    :P18_ACTION := 'ADD';
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 6758575956659428
+        }
+        serverSideCondition {
+            whenButtonPressed: @add
+        }
+    )
+
+    process calculate-shopping-cart-items (
+        name: Calculate Shopping Cart Items
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    :P18_SHOPPING_CART_ITEMS := manage_orders.get_quantity;
+                END;
+                ```
+        }
+        execution {
+            sequence: 40
+        }
+        advanced {
+            executionMappingIdentifier: 6758896931659431
+        }
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        settings {
+            itemsToReturn: [
+                P18_SHOPPING_CART_ITEMS
+                P18_PRODUCT_ID
+                P18_ACTION
+                P18_QUANTITY
+            ]
+        }
+        execution {
+            sequence: 50
+        }
+        advanced {
+            executionMappingIdentifier: 6758962900659432
+        }
+    )
+
+    process delete-product (
+        name: Delete product
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    IF manage_orders.product_exists(p_product => :P18_PRODUCT_ID) > 0 THEN
+                        manage_orders.remove_product(p_product => :P18_PRODUCT_ID);
+                    END IF;
+                    :P18_ACTION := 'DELETE';
+                END;
+                ```
+        }
+        execution {
+            sequence: 30
+        }
+        advanced {
+            executionMappingIdentifier: 6758745240659430
+        }
+        serverSideCondition {
+            whenButtonPressed: @delete
+        }
+    )
+
+    process edit-product (
+        name: Edit Product
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    IF manage_orders.product_exists(p_product => :P18_PRODUCT_ID) > 0 THEN
+                        manage_orders.remove_product(p_product => :P18_PRODUCT_ID);
+                        manage_orders.add_product (p_product  => :P18_PRODUCT_ID,
+                                                p_quantity => :P18_QUANTITY);
+                    END IF;
+                    :P18_ACTION := 'EDIT';
+                END;
+                ```
+        }
+        execution {
+            sequence: 20
+        }
+        advanced {
+            executionMappingIdentifier: 6758669157659429
+        }
+        serverSideCondition {
+            whenButtonPressed: @edit
+        }
+    )
+
+)
+

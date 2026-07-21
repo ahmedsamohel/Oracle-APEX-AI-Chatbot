@@ -1,0 +1,25 @@
+appProcess initialize-shopping-cart-header (
+    name: Initialize Shopping Cart Header
+    type: executeCode
+    source {
+        plsqlCode:
+            ```plsql
+            -- Initialize shopping cart navigation bar to show appropriate icon and count
+            DECLARE
+                l_cnt NUMBER := manage_orders.get_quantity;
+            BEGIN
+                IF l_cnt > 0 THEN
+                    :SHOPPING_CART_ITEMS := l_cnt;
+                    :SHOPPING_CART_ICON := 'fa-cart-full';
+                ELSE
+                    :SHOPPING_CART_ITEMS := '';
+                    :SHOPPING_CART_ICON := 'fa-cart-empty';
+                END IF;
+            END;
+            ```
+    }
+    execution {
+        sequence: 1
+    }
+)
+

@@ -1,0 +1,13 @@
+authentication oracle-apex-accounts (
+    name: Oracle APEX Accounts
+    type: oracleApexAccounts
+)
+
+authentication public-auth (
+    name: PUBLIC AUTH
+    type: noAuth
+    settings {
+        username: nobody
+    }
+)
+

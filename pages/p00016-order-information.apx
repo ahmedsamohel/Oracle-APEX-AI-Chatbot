@@ -1,0 +1,139 @@
+page 16 (
+    name: Order Information
+    alias: ORDER-INFORMATION
+    title: Order Information
+    appearance {
+        pageTemplate: @standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region items (
+        name: Items
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT  o.line_item_id                Item,
+                        p.product_name                Product,
+                        o.unit_price,
+                        o.quantity,
+                        ( o.unit_price * o.quantity ) Subtotal,
+                        p.product_image
+                FROM   order_items o,
+                    products p
+                WHERE  p.product_id = o.product_id
+                AND  order_id = :P16_ORDER
+                ```
+        }
+        layout {
+            sequence: 20
+            parentRegion: @order-p16-order
+            slot: subRegions
+        }
+        appearance {
+            template: @cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: ITEM
+        }
+        title {
+            column: PRODUCT
+        }
+        media {
+            source: blobColumn
+            blobColumn: PRODUCT_IMAGE
+        }
+    )
+
+    region order-details (
+        name: Order Details
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT o.order_id,
+                    o.order_datetime,
+                    o.customer_id,
+                    o.order_status,
+                    o.store_id,
+                    (SELECT Sum(unit_price * quantity)
+                        FROM   order_items i
+                        WHERE  i.order_id = o.order_id) total
+                FROM   orders o
+                WHERE  order_id = :P16_ORDER
+                ```
+        }
+        layout {
+            sequence: 10
+            parentRegion: @order-p16-order
+            slot: subRegions
+        }
+        appearance {
+            template: @cards-container
+            templateOptions: #DEFAULT#
+        }
+        secondaryBody {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                <b> Order Placed:</b> &ORDER_DATETIME. <br>
+                <b> Status: </b>&ORDER_STATUS. <br>
+                <b> Total: </b>&TOTAL.
+                ```
+        }
+    )
+
+    region order-p16-order (
+        name: "Order: &P16_ORDER. "
+        type: staticContent
+        layout {
+            sequence: 10
+            parentRegion: @thank-you-for-your-order
+            slot: subRegions
+        }
+        appearance {
+            template: @standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region thank-you-for-your-order (
+        name: Thank you for your order!
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @cards-container
+            templateOptions: #DEFAULT#
+            icon: fa-heart
+        }
+    )
+
+    pageItem P16_ORDER (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @thank-you-for-your-order
+            slot: regionBody
+        }
+    )
+
+)
+
