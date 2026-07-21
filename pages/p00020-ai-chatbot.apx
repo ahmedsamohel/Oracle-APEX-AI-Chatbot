@@ -184,6 +184,76 @@ page 20 (
         }
     )
 
+    button clear-chat (
+        buttonName: P20_CLEAR_CHAT
+        label: Clear Chat History
+        layout {
+            sequence: 30
+            region: @chat-input
+            slot: regionBody
+        }
+        appearance {
+            buttonTemplate: @text
+            hot: false
+            icon: fa-trash-o
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    process clear-chat-messages (
+        name: Clear Chat Messages
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                BEGIN
+                    -- تسجيل بداية عملية حذف الرسائل
+                    apex_debug.info('=== بداية عملية مسح سجل الدردشة ===');
+                    apex_debug.info('رقم الجلسة: %s', :P20_SESSION_ID);
+                
+                    -- حذف جميع رسائل الجلسة الحالية من جدول chat_messages
+                    IF :P20_SESSION_ID IS NOT NULL THEN
+                        DELETE FROM chat_messages
+                        WHERE session_id = :P20_SESSION_ID;
+                        
+                        apex_debug.info('تم حذف جميع رسائل الجلسة بنجاح.');
+                    ELSE
+                        apex_debug.info('تحذير: لم تتم العملية - لا توجد جلسة نشطة.');
+                    END IF;
+                    
+                    -- مسح محتوى حقل الإدخال
+                    :P20_USER_PROMPT := NULL;
+                    
+                    apex_debug.info('=== انتهاء عملية المسح بنجاح ===');
+                
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        -- تسجيل الخطأ
+                        apex_debug.error('!!! حدث خطأ أثناء مسح سجل الدردشة !!!');
+                        apex_debug.error('الخطأ: %s', SQLERRM);
+                        
+                        -- عرض رسالة خطأ للمستخدم
+                        apex_error.add_error (
+                            p_message          => 'حدث خطأ أثناء مسح سجل الدردشة: ' || SQLERRM,
+                            p_display_location => apex_error.c_inline_in_notification
+                        );
+                END;
+                ```
+        }
+        execution {
+            sequence: 5
+            point: beforeHeader
+            whenButtonPressed: @clear-chat
+        }
+        advanced {
+            executionMappingIdentifier: 103525897418212990316
+        }
+    )
+
     process call-ai-service (
         name: Call AI Service
         type: executeCode
